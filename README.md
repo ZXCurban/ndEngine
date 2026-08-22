@@ -1,10 +1,13 @@
-# ndEngine
+<h1 align="center">ndEngine</h1>
 
-> **Multi-purpose N-dimensional geometry engine + TUI for Linux**
->
-> *The engine doesn't even know what a cube is.*
+<p align="center">
+  <strong>Multi-purpose N-dimensional geometry engine and TUI for Linux</strong>
+</p>
 
-ndEngine is an experimental N-dimensional geometry engine with a TUI for Linux.
+<p align="center">
+  <strong>The engine doesn't even know what a cube is</strong>
+</p>
+
 > [!IMPORTANT]
 > The project is currently in early development.
 
