@@ -29,4 +29,4 @@ uv run mypy src
 ```
 
 ##  License
-MIT
+[MIT](LICENSE)
