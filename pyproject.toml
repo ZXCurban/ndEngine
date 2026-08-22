@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ndengine"
+version = "0.1.0"
+description = "Multi-purpose N-dimensional geometry engine and TUI for Linux"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+
+authors = [
+    { name = "Kurban Dalgatov" }
+]
+
+keywords = [
+    "geometry",
+    "n-dimensional",
+    "tui",
+    "linux",
+    "math",
+    "visualization"
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries"
+]
+
+[project.urls]
+Homepage = "https://github.com/zxcurban/ndEngine"
+Repository = "https://github.com/zxcurban/ndEngine"
+Issues = "https://github.com/zxcurban/ndEngine/issues"
+
+[project.scripts]
+ndengine = "ndengine.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ndengine"]
