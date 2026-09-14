@@ -1,60 +1,114 @@
+from __future__ import annotations
+
 import math
+from collections.abc import Iterable
+from typing import Any, TypeGuard
 
-class ndVector:
-    def __init__(self, coordinates):
-        self.coordinates = coordinates
+Coordinate = int | float
 
-    def __getitem__(self, key):
-        return self.coordinates[key]
 
-    def __setitem__(self, key, value):
-        self.coordinates[key] = value
+class Vector:
+    _coordinates: list[Coordinate]
 
-    def __len__(self):
-        return len(self.coordinates)
+    def __init__(self, coordinates: Iterable[Coordinate]) -> None:
+        coords = list(coordinates)
 
-    def __add__(self, other):
-        if len(self.coordinates) != len(other.coordinates):
-            raise ValueError("Cannot add vectors of different dimensions")
-        return ndVector([
-            i[0] + i[1]
-            for i in zip(self.coordinates, other.coordinates)
-        ])
+        if not coords:
+            raise ValueError("Vector cannot be empty")
 
-    def __sub__(self, other):
-        if len(self.coordinates) != len(other.coordinates):
-            raise ValueError("Cannot subtract vectors of different dimensions")
-        return ndVector([
-            i[0] - i[1]
-            for i in zip(self.coordinates, other.coordinates)
-        ])
+        if not all(self._is_num(i) for i in coords):
+            raise TypeError("Vector coordinates must be int or float")
 
-    def __mul__(self, other):
-        if not isinstance(other, (int, float)):
+        self._coordinates = coords
+
+    def __getitem__(self, key: int | slice) -> Coordinate | list[Coordinate]:
+        return self._coordinates[key]
+
+    def __setitem__(self, key: int | slice, value: Any) -> None:
+        if isinstance(key, int):
+            if not self._is_num(value):
+                raise TypeError("Coordinate must be int or float")
+            self._coordinates[key] = value
+            return
+
+        if isinstance(key, slice):
+            values = list(value)
+
+            indices = range(*key.indices(len(self._coordinates)))
+
+            if len(values) != len(indices):
+                raise ValueError("Cannot change vector dimension")
+
+            if not all(self._is_num(v) for v in values):
+                raise TypeError("Coordinates must be int or float")
+
+            self._coordinates[key] = values
+            return
+
+        raise TypeError("Vector index must be an integer or slice")
+
+    def __len__(self) -> int:
+        return len(self._coordinates)
+
+    def __add__(self, other: object) -> Vector:
+        if not isinstance(other, Vector):
             return NotImplemented
-        return ndVector([
-            i * other
-            for i in self.coordinates
-        ])
+        if not self._eq_len(other):
+            raise ValueError("Cannot add vectors of different dimensions")
+        return Vector([a + b for a, b in zip(self._coordinates, other._coordinates, strict=True)])
 
-    def __rmul__(self, other):
+    def __sub__(self, other: object) -> Vector:
+        if not isinstance(other, Vector):
+            return NotImplemented
+        if not self._eq_len(other):
+            raise ValueError("Cannot subtract vectors of different dimensions")
+        return Vector([a - b for a, b in zip(self._coordinates, other._coordinates, strict=True)])
+
+    def __mul__(self, other: object) -> Vector:
+        if not self._is_num(other):
+            return NotImplemented
+        return Vector([i * other for i in self._coordinates])
+
+    def __rmul__(self, other: object) -> Vector:
         return self.__mul__(other)
 
-    def __truediv__(self, other):
-        if not isinstance(other, (int, float)):
+    def __truediv__(self, other: object) -> Vector:
+        if not self._is_num(other):
             return NotImplemented
-        return ndVector([
-            i/other
-            for i in self.coordinates
-        ])
+        if other == 0:
+            raise ZeroDivisionError("Cannot divide vector on zero")
+        return Vector([i / other for i in self._coordinates])
 
-    def __neg__(self):
-        return ndVector([-x for x in self.coordinates])
+    def __neg__(self) -> Vector:
+        return Vector([-x for x in self._coordinates])
 
-    def length(self):
-        return math.sqrt(sum(i**2 for i in self.coordinates))
+    def __repr__(self) -> str:
+        return f"Vector({self._coordinates})"
 
-    def normalize(self):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vector):
+            return False
+        if not self._eq_len(other):
+            return False
+        return all(
+            math.isclose(a, b, rel_tol=1e-9, abs_tol=0.0)
+            for a, b in zip(self._coordinates, other._coordinates, strict=True)
+        )
+
+    def copy(self) -> Vector:
+        return Vector(list(self._coordinates))
+
+    def _eq_len(self, other: Vector) -> bool:
+        return len(self._coordinates) == len(other._coordinates)
+
+    @staticmethod
+    def _is_num(value: object) -> TypeGuard[Coordinate]:
+        return isinstance(value, (int, float))
+
+    def length(self) -> float:
+        return math.sqrt(sum(i**2 for i in self._coordinates))
+
+    def normalize(self) -> Vector:
         length = self.length()
 
         if length == 0:
@@ -62,56 +116,22 @@ class ndVector:
 
         return self / length
 
-    def dot(self, other):
-        if len(self.coordinates) != len(other.coordinates):
+    def dot(self, other: Vector) -> float:
+        if not isinstance(other, Vector):
+            raise TypeError(f"Dot product requires another Vector, but got {type(other).__name__}")
+        if not self._eq_len(other):
             raise ValueError("Cannot calculate dot product of vectors with different dimensions")
-        return sum(
-            i[0] * i[1]
-            for i in zip(self.coordinates, other.coordinates)
-        )
+        return sum(a * b for a, b in zip(self._coordinates, other._coordinates, strict=True))
 
-    def angle_to(self, other):
+    def angle_to(self, other: Vector) -> float:
+        if not isinstance(other, Vector):
+            raise TypeError("Angle calculation requires another Vector")
         self_length = self.length()
         other_length = other.length()
 
         if not self_length or not other_length:
             raise ValueError("Cannot calculate angle with zero vector")
 
-        return math.acos(
-            self.dot(other) / (self_length * other_length)
-        )
+        cos_angle = max(min(self.dot(other) / (self_length * other_length), 1.0), -1.0)
 
-#a⋅b=a1​b1​+a2​b2​+a3​b3
-#∣v∣=x12​+x22​+⋯+xn2​
-
-
-
-Na = ndVector([1, 2, 3])
-Nb = ndVector([10, 20, 30])
-
-Nc = Na + Nb
-Nd = Na - Nb
-Nf = 5*Na
-Ng = Na/2
-
-print(Nc.coordinates)
-print(Nd.coordinates)
-print(Nf.coordinates)
-print(Ng.coordinates)
-
-print(Na[1])
-
-Na[1] = 3
-
-print(Na[1])
-print(len(Na))
-
-Nh = -Na
-
-print(Nh.coordinates)
-
-v = ndVector([3, 4])
-n = v.normalize()
-
-print(n.coordinates)
-print(n.length())
+        return math.acos(cos_angle)
