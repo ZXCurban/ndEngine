@@ -1,21 +1,8 @@
-import importlib.util
 import math
-from pathlib import Path
-from typing import Any
 
 import pytest
 
-
-def _load_vector_class() -> Any:
-    path = Path(__file__).parent.parent / "src" / "math" / "vector.py"
-    spec = importlib.util.spec_from_file_location("nd_vector", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.Vector
-
-
-Vector = _load_vector_class()
+from ndengine.math.vector import Vector
 
 
 def test_init_with_list() -> None:
@@ -39,11 +26,11 @@ def test_init_empty_raises() -> None:
 
 def test_init_non_numeric_raises() -> None:
     with pytest.raises(TypeError):
-        Vector([1, "a"])
+        Vector([1, "a"])  # type: ignore[list-item]
     with pytest.raises(TypeError):
-        Vector([None])
+        Vector([None])  # type: ignore[list-item]
     with pytest.raises(TypeError):
-        Vector([1, [2]])
+        Vector([1, [2]])  # type: ignore[list-item]
 
 
 def test_getitem() -> None:
@@ -92,7 +79,7 @@ def test_setitem_by_slice_non_numeric_raises() -> None:
 def test_setitem_bad_key_raises() -> None:
     v = Vector([1, 2, 3])
     with pytest.raises(TypeError):
-        v["a"] = 1
+        v["a"] = 1  # type: ignore[index]
 
 
 @pytest.mark.parametrize(
@@ -266,9 +253,9 @@ def test_dot_different_dimensions_raises() -> None:
 
 def test_dot_non_vector_raises() -> None:
     with pytest.raises(TypeError):
-        Vector([1, 2]).dot([1, 2])
+        Vector([1, 2]).dot([1, 2])  # type: ignore[arg-type]
     with pytest.raises(TypeError):
-        Vector([1, 2]).dot(5)
+        Vector([1, 2]).dot(5)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -293,4 +280,4 @@ def test_angle_to_with_zero_vector_raises() -> None:
 
 def test_angle_to_non_vector_raises() -> None:
     with pytest.raises(TypeError):
-        Vector([1, 0]).angle_to([1, 0])
+        Vector([1, 0]).angle_to([1, 0])  # type: ignore[arg-type]
