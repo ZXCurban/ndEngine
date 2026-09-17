@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable
-from typing import Any, TypeGuard
+from collections.abc import Iterable, Iterator
+from typing import Any, TypeGuard, overload
 
 Coordinate = int | float
 
@@ -20,6 +20,12 @@ class Vector:
             raise TypeError("Vector coordinates must be int or float")
 
         self._coordinates = coords
+
+    @overload
+    def __getitem__(self, key: int) -> Coordinate: ...
+
+    @overload
+    def __getitem__(self, key: slice) -> list[Coordinate]: ...
 
     def __getitem__(self, key: int | slice) -> Coordinate | list[Coordinate]:
         return self._coordinates[key]
@@ -94,6 +100,9 @@ class Vector:
             math.isclose(a, b, rel_tol=1e-9, abs_tol=0.0)
             for a, b in zip(self._coordinates, other._coordinates, strict=True)
         )
+
+    def __iter__(self) -> Iterator[Coordinate]:
+        return iter(self._coordinates)
 
     def copy(self) -> Vector:
         return Vector(list(self._coordinates))
