@@ -1,52 +1,52 @@
-# AGENTS.md — инструкция для агентов в этом проекте
+# AGENTS.md — instructions for agents in this project
 
-> Этот файл НЕ должен попадать в `.gitignore`. Он обязан оставаться в репозитории.
+> This file MUST NOT end up in `.gitignore`. It is required to stay in the repository.
 
-## Роли
+## Roles
 
-- Основной разработчик — пользователь. Только он пишет и меняет бизнес-логику.
-- Агент — ревьюер и помощник по качеству: смотрит diff, покрывает тестами,
-  гоняет проверки, готовит проект к коммиту, пишет отчет.
+- Lead developer — the user. Only they write and change business logic.
+- Agent — reviewer and quality assistant: inspects the diff, covers code with tests,
+  runs checks, prepares the project for commit, writes a report.
 
-## Главное правило
+## Main rule
 
-**НЕ менять логику кода.** Запрещено менять поведение `src/`.
-Разрешено агенту:
+**DO NOT change code logic.** Changing the behavior of `src/` is forbidden.
+The agent is allowed to:
 
-- добавлять/править файлы в `tests/`;
-- запускать `ruff check --fix` (только импорты/очевидные автофиксы) и `ruff format`;
-- править `.gitignore` (только добавлением стандартных мусорных паттернов);
-- создавать/править этот `AGENTS.md`.
+- add/edit files in `tests/`;
+- run `ruff check --fix` (imports/obvious autofixes only) and `ruff format`;
+- edit `.gitignore` (only by adding standard junk patterns);
+- create/edit this `AGENTS.md`.
 
-Все, что требует правки логики или типов в `src/` (включая исправления под `mypy --strict`),
-агент НЕ правит, а фиксирует в отчете как «Баги / замечания».
+Anything requiring logic or type fixes in `src/` (including fixes for `mypy --strict`),
+the agent does NOT fix, but records in the report under "Bugs / remarks".
 
-**Тесты не должны подгоняться под текущую реализацию, если она противоречит очевидному контракту/API.**
+**Tests must not be fitted to the current implementation if it contradicts the obvious contract/API.**
 
-Тесты должны проверять ожидаемый контракт/API, а не просто воспроизводить
-текущую реализацию. Если поведение неоднозначно или контракт не определен,
-агент фиксирует это в отчете и не придумывает семантику самостоятельно.
+Tests must verify the expected contract/API, not merely reproduce
+the current implementation. If behavior is ambiguous or the contract is undefined,
+the agent records it in the report and does not invent semantics on its own.
 
-## Рабочий цикл агента (каждый запуск)
+## Agent workflow (every run)
 
 1. **Diff:** `git status --short`, `git log --oneline -10`, `git diff --stat`,
-   `git diff -- <файлы>` — понять, какие фичи/код добавлены.
-2. **Тесты нового кода:** если новый код в `src/` не покрыт — добавить тесты
-   в `tests/` в стиле существующих (`test_*.py`, функции `test_*() -> None`,
-   `pytest.raises` для ошибок). Новый файл называть по смыслу,
-   например `tests/test_matrix_setitem.py`.
-3. **Проверки (все через `uv run`):**
+   `git diff -- <files>` — understand which features/code were added.
+2. **Tests for new code:** if new code in `src/` is uncovered — add tests
+   in `tests/` in the existing style (`test_*.py`, `test_*() -> None` functions,
+   `pytest.raises` for errors). Name new files by meaning,
+   e.g. `tests/test_matrix_setitem.py`.
+3. **Checks (all via `uv run`):**
    - `uv run pytest -q`
    - `uv run ruff check .`
-   - `uv run ruff format --check .` (при расхождениях — `uv run ruff format .`)
+   - `uv run ruff format --check .` (on mismatch — `uv run ruff format .`)
    - `uv run mypy src`
-4. **Проект к коммиту:** проверить `.gitignore` (должен игнорить `__pycache__/`,
+4. **Prepare for commit:** check `.gitignore` (must ignore `__pycache__/`,
    `*.py[cod]`, `.pytest_cache/`, `.mypy_cache/`, `.ruff_cache/`, `.venv/`,
-   `build/`, `dist/`, `.env*`, IDE/OS-мусор). Убедиться, что `AGENTS.md`,
-   `src/`, `tests/` не игнорируются (`git check-ignore -v <файл>`).
-5. **Отчет + имя коммита** (см. формат ниже). Коммит/пуш без явной просьбы НЕ делать.
+   `build/`, `dist/`, `.env*`, IDE/OS junk). Make sure `AGENTS.md`,
+   `src/`, `tests/` are not ignored (`git check-ignore -v <file>`).
+5. **Report + commit name** (see format below). Do NOT commit/push without an explicit request.
 
-## Команды
+## Commands
 
 ```bash
 uv sync
@@ -57,13 +57,13 @@ uv run mypy src
 git status --short && git diff --stat
 ```
 
-## Формат отчета
+## Report format
 
-- **Измененный код:** что добавлено (файлы, методы).
-- **Баги/ошибки:** список с путями `file:line`, без правок логики.
-- **Новые тесты:** какой файл, сколько тестов, что покрывают.
-- **Линтеры/форматеры:** что исправлено (`ruff check --fix`, `ruff format`).
-- **Проверки:** `pytest` / `ruff check` / `ruff format --check` / `mypy` — зеленые или нет
-  (с выводом ошибок, если красные).
-- **Название коммита:** одна строка в стиле conventional commits, например
+- **Changed code:** what was added (files, methods).
+- **Bugs/errors:** list with `file:line` paths, no logic fixes.
+- **New tests:** which file, how many tests, what they cover.
+- **Linters/formatters:** what was fixed (`ruff check --fix`, `ruff format`).
+- **Checks:** `pytest` / `ruff check` / `ruff format --check` / `mypy` — green or not
+  (with error output if red).
+- **Commit name:** one line in conventional commits style, e.g.
   `feat: ...`, `test: ...`, `chore: ...`.
