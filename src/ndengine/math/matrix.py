@@ -212,5 +212,55 @@ class Matrix:
             return False
         return len(self) == len(other) and all(a == b for a, b in zip(self, other, strict=True))
 
+    def __neg__(self) -> Matrix:
+        return Matrix(row * -1 for row in self._rows)
+
+    def __add__(self, other: object) -> Matrix:
+        if not isinstance(other, (Matrix, int, float)):
+            return NotImplemented
+
+        if isinstance(other, (int, float)):
+            return Matrix(row + other for row in self._rows)
+
+        if len(self) != len(other) or len(self._rows[0]) != len(other._rows[0]):
+            raise ValueError("Cannot add matrices of different dimensions")
+
+        return Matrix(
+            left_row + right_row
+            for left_row, right_row in zip(self._rows, other._rows, strict=True)
+        )
+
+    def __radd__(self, other: object) -> Matrix:
+        return self.__add__(other)
+
+    def __sub__(self, other: object) -> Matrix:
+        if not isinstance(other, (Matrix, int, float)):
+            return NotImplemented
+
+        if isinstance(other, (int, float)):
+            return Matrix(row - other for row in self._rows)
+
+        if len(self) != len(other) or len(self._rows[0]) != len(other._rows[0]):
+            raise ValueError("Cannot sub matrices of different dimensions")
+
+        return Matrix(
+            left_row - right_row
+            for left_row, right_row in zip(self._rows, other._rows, strict=True)
+        )
+
+    def __rsub__(self, other: object) -> Matrix:
+        if isinstance(other, (int, float)):
+            return Matrix(other - row for row in self._rows)
+        return NotImplemented
+
+    def __mul__(self, other: object) -> Matrix:
+        if not isinstance(other, (int, float)):
+            return NotImplemented
+
+        return Matrix(row * other for row in self._rows)
+
+    def __rmul__(self, other: object) -> Matrix:
+        return self.__mul__(other)
+
     def copy(self) -> Matrix:
         return Matrix([row.copy() for row in self])

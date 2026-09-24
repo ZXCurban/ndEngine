@@ -104,7 +104,7 @@ def test_add_non_vector_raises() -> None:
     with pytest.raises(TypeError):
         Vector([1, 2]) + [3, 4]
     with pytest.raises(TypeError):
-        Vector([1, 2]) + 1
+        Vector([1, 2]) + "a"
 
 
 @pytest.mark.parametrize(

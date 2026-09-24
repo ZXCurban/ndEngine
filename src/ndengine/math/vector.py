@@ -57,18 +57,32 @@ class Vector:
         return len(self._coordinates)
 
     def __add__(self, other: object) -> Vector:
+        if isinstance(other, (int, float)):
+            return Vector([a + other for a in self._coordinates])
+
         if not isinstance(other, Vector):
             return NotImplemented
         if not self._eq_len(other):
             raise ValueError("Cannot add vectors of different dimensions")
         return Vector([a + b for a, b in zip(self._coordinates, other._coordinates, strict=True)])
 
+    def __radd__(self, other: object) -> Vector:
+        return self.__add__(other)
+
     def __sub__(self, other: object) -> Vector:
+        if isinstance(other, (int, float)):
+            return Vector([a - other for a in self._coordinates])
+
         if not isinstance(other, Vector):
             return NotImplemented
         if not self._eq_len(other):
             raise ValueError("Cannot subtract vectors of different dimensions")
         return Vector([a - b for a, b in zip(self._coordinates, other._coordinates, strict=True)])
+
+    def __rsub__(self, other: object) -> Vector:
+        if isinstance(other, (int, float)):
+            return Vector([other - a for a in self._coordinates])
+        return NotImplemented
 
     def __mul__(self, other: object) -> Vector:
         if not self._is_num(other):
